@@ -49,9 +49,9 @@ class Node {
   /**
    * Set left-child's node.
    * @access public
-   * @return void
+   * @return null
    */
-  public function setLeft(Node $node) {
+  public function setLeft(Node &$node) {
     $this->_left = $node;
   }
 
@@ -67,9 +67,9 @@ class Node {
   /**
    * Set right-child's node.
    * @access public
-   * @return void
+   * @return null
    */
-  public function setRight(Node $node) {
+  public function setRight(Node &$node) {
     $this->_right = $node;
   }
 
@@ -85,21 +85,59 @@ class Node {
   /**
    * Set parent's node.
    * @access public
-   * @return public
+   * @return null
    */
-  public function setParent(Node $node) {
+  public function setParent(Node &$node) {
     $this->_parent = $node;
   }
 
+  /**
+   * Print out the value of this node and its
+   * left and right nodes recursively
+   * @access public
+   * @return string
+   */
+  public function display() {
+  	echo $this->_val, "\n";
+  	if ($this->_left->val() !== null) {
+		echo "Left:\n";
+		$this->_left->display();
+	 	echo "Going up\n";
+ 	}
+ 	if ($this->_right->val() !== null) {
+ 		echo "Right:\n";
+ 		$this->_right->display();
+ 		echo "Going up\n";
+ 	}
+  }
+
+  /**
+   * Magic toString function
+   * @access public
+   * @return string
+   */
   public function __toString() {
     return $this->val() === NULL ? 'NULL' : $this->val() . '';
   }
 }
 
 class BinarySearchTree {
+  /*
+   * Top of tree
+   */
   private $_root;
+  
+  /*
+   * In place of NULL pointers
+   */
   private $_sentinel;
 
+  /*
+   * Creates NULL node as sentinel
+   * Sets root as sentinel, with left and right and parent pointers to sentinel too
+   * @access public
+   * @return null
+   */
   public function __construct() {
     $this->_sentinel = new Node(NULL);
 
@@ -109,6 +147,11 @@ class BinarySearchTree {
     $this->_root->setRight($this->_sentinel);
   }
 
+  /*
+   * Inserts new node left or right depending on value
+   * @access public
+   * @return null
+   */
   public function insert($val) {
     if (!is_object($val) || getclass($val) !== 'Node') {
       $newNode = new Node($val);
@@ -117,42 +160,72 @@ class BinarySearchTree {
     }
     $newNode->setLeft($this->_sentinel);
     $newNode->setRight($this->_sentinel);
-
-    $node = $this->_root;
-    $parent = $this->_sentinel;
-    while ($node !== $this->_sentinel) {    
-      $parent = $node;
-      if ($newNode->val() < $node->val()) {
-        $node = $node->left();
-      } else {
-        $node = $node->right();
-      }
-    }
-
-    if ($parent === $this->_sentinel) {
-      $newNode->setParent($this->_sentinel);
-      $this->_root = $newNode;
+    
+    // Insert first node as root
+    if ($this->_root === $this->_sentinel) {
+    	$this->_root = $newNode;
     } else {
-      if ($newNode->val() < $parent->val()) {
-        $parent->setLeft($newNode);
-      } else {
-        $parent->setRight($newNode);
-      }
-      $newNode->setParent($parent);
+    	$root = $this->_root;
+    	// While the root node is not empty
+    	while($root !== $this->_sentinel) {
+    		// Don't insert the same value twice
+    		if ($newNode->val() == $root->val()) {
+    			return;
+    		} else if ($newNode->val() < $root->val()) {
+    			// Insert recursively to the left for smaller values
+    			if ($root->left() === $this->_sentinel) {
+    				$newNode->setParent($root);
+    				$root->setLeft($newNode);
+    				return;
+    			} else {
+    				$root = $root->left();
+    			}
+    		} else {
+    			// Insert recursively to the right for greater values
+    			if ($root->right() === $this->_sentinel) {
+    				$newNode->setParent($root);
+    				$root->setRight($newNode);
+    				return;
+    			} else {
+    				$root = $root->right();
+	   			}
+	   		}
+    	}
     }
   }
 
-  public function search($val) {
+  /**
+   * Search for value in tree and return node
+   * @access public
+   * @return mixed Node or null
+   */
+  public function search($needle) {
     $node = $this->_root;
 
-    while ($node !== $this->_sentinel && $node->val() !== $val) {
-      if ($val < $node->val()) {
+	/*
+	 * While the current node is not NULL and the value doesn't match,
+	 * search left if the needle is smaller than this nodes value
+	 * and right otherwise
+	 */
+    while ($node !== $this->_sentinel && $node->val() !== $needle) {
+      if ($needle < $node->val()) {
         $node = $node->left();
       } else {
         $node = $node->right();
       }
     }
     return $node;
+  }
+
+  /**
+   * Print tree from root downwards left-to-right
+   * @access public
+   * @return null
+   */
+  public function traverse() {
+  	if ($this->_root !== $this->_sentinel) {
+  		$this->_root->display();
+  	}
   }
 }
 
@@ -169,10 +242,8 @@ $BST->insert(4);
 $BST->insert(13);
 $BST->insert(9);
 
-function test_searching($num) {
-  global $BST;
-
-  $node = $BST->search($num);
+function test_searching(&$bst, $num) {
+  $node = $bst->search($num);
   if ($node->val() !== NULL) {
     echo "Node with value $num is found\n";
     echo "Parent's node = " . $node->parent() . "\n";
@@ -184,7 +255,7 @@ function test_searching($num) {
   echo "\n";
 }
 
-test_searching(7);
-test_searching(15);
-test_searching(3);
-test_searching(2);
+test_searching($BST, 7);
+test_searching($BST, 15);
+test_searching($BST, 3);
+test_searching($BST, 2);
