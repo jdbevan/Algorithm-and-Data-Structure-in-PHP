@@ -134,10 +134,11 @@ class Node {
   	if (strlen($this->_val) > $val_width) {
   		$val_width = strlen($this->_val);
   	}
-  	$col++;
+  	$col = $col*2 + 1;
   	if ($this->_left->val() !== null) {
   		$this->_left->draw($render, $val_width, $col, $row+1);
   	}
+//  	$col--;// = ($col-1) / 2;
   	$render[--$col][$row] = $this->_val;
   	if ($this->_right->val() !== null) {
   		$this->_right->draw($render, $val_width, --$col, $row+1);
@@ -282,28 +283,38 @@ class BinarySearchTree {
   		$rows = $this->height();
   		
   		$this->_root->draw($render_array, $width);
-  		//$edge_line = "";
+  		$edge_line = "";
   		for ($r = 0; $r < $rows; $r++) {
   			$node_line = "";
-  			//$edge_line = "";
+  			$edge_line = "";
   			foreach ($render_array as $col=>$column) {
   				if (isset($column[$r])) {
-  					$node_line .= sprintf("%-${width}s", $column[$r]);
-  					/*$edges = "";
+  					$node_line .= sprintf("%${width}s", $column[$r]);
+  					$edges = "";
   					if (isset($render_array[$col+1][$r+1])) {
-  						$edges .= "/";
+  						if ($column[$r] < $this->_root->val() && $render_array[$col+1][$r+1] < $this->_root->val()) {
+	  						$edges .= "/";
+	  					}
+	  					if ($column[$r] > $this->_root->val() && $render_array[$col+1][$r+1] > $this->_root->val()) {
+	  						$edges .= "/";
+	  					}
   					}
-  					if (isset($render_array[$col-1][$r+1])) {
-  						$edges .= "\\";
+  					if (isset($render_array[$col-1][$r+1]) && $render_array[$col-1][$r+1] > $this->_root->val()) {
+  						if ($column[$r] < $this->_root->val() && $render_array[$col-1][$r+1] < $this->_root->val()) {
+	  						$edges .= "\\";
+	  					}
+	  					if ($column[$r] > $this->_root->val() && $render_array[$col-1][$r+1] > $this->_root->val()) {
+	  						$edges .= "\\";
+	  					}
   					}
-  					$edge_line .= sprintf("%${width}s", $edges);*/
+  					$edge_line .= sprintf("%-${width}s", $edges);
   				} else {
-  					$node_line .= sprintf("%-${width}s", "");
-  					//$edge_line .= sprintf("%-${width}s", "");
+  					$node_line .= sprintf("%${width}s", "");
+  					$edge_line .= sprintf("%${width}s", "");
   				}
   			}
   			echo "$node_line\n";
-  			//echo "$edge_line\n";
+  			echo "$edge_line\n";
   		}
   	}
   }
