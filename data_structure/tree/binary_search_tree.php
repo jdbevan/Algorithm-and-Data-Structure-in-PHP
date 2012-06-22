@@ -98,17 +98,51 @@ class Node {
    * @return string
    */
   public function display() {
-  	echo $this->_val, "\n";
   	if ($this->_left->val() !== null) {
-		echo "Left:\n";
 		$this->_left->display();
-	 	echo "Going up\n";
  	}
+  	echo $this->_val;
+  	echo ($this->_parent === null || $this->_parent->val() === null) ? " <-" : "", "\n";
  	if ($this->_right->val() !== null) {
- 		echo "Right:\n";
  		$this->_right->display();
- 		echo "Going up\n";
  	}
+  }
+
+  /**
+   * Traverse the tree left-to-right to find the depth of the
+   * tree.
+   */
+  public function depthFromNode($depth = 0) {
+  	$maxDepth = $depth+1;
+  	if ($this->_left->val() !== null) {
+  		$left = $this->_left->depthFromNode($depth+1);
+  		if ($left > $maxDepth) {
+  			$maxDepth = $left;
+  		}
+  	}
+  	if ($this->_right->val() !== null) {
+  		$right = $this->_right->depthFromNode($depth+1);
+  		if ($right > $maxDepth) {
+  			$maxDepth = $right;
+  		}
+  	}
+  	return $maxDepth;
+  }
+
+
+  public function draw(&$render, &$val_width = 0, &$col = 0, $row = 0) {
+  	if (strlen($this->_val) > $val_width) {
+  		$val_width = strlen($this->_val);
+  	}
+  	$col++;
+  	if ($this->_left->val() !== null) {
+  		$this->_left->draw($render, $val_width, $col, $row+1);
+  	}
+  	$render[--$col][$row] = $this->_val;
+  	if ($this->_right->val() !== null) {
+  		$this->_right->draw($render, $val_width, --$col, $row+1);
+  		$col++;
+  	}
   }
 
   /**
@@ -227,6 +261,53 @@ class BinarySearchTree {
   		$this->_root->display();
   	}
   }
+
+  /**
+   * Traverse all routes to leaves and return greatest
+   * journey distance
+   */
+  public function depth() {
+  	if ($this->_root !== $this->_sentinel) {
+  		return $this->_root->depthFromNode();
+  	}
+  }
+
+  /*
+   * Draw the tree
+   */
+  public function draw() {
+  	if ($this->_root !== $this->_sentinel) {
+  		$render_array = array();
+  		$width = 0;
+  		$rows = $this->depth();
+  		
+  		$this->_root->draw($render_array, $width);
+  		//$edge_line = "";
+  		for ($r = 0; $r < $rows; $r++) {
+  			$node_line = "";
+  			//$edge_line = "";
+  			foreach ($render_array as $col=>$column) {
+  				if (isset($column[$r])) {
+  					$node_line .= sprintf("%-${width}s", $column[$r]);
+  					/*$edges = "";
+  					if (isset($render_array[$col+1][$r+1])) {
+  						$edges .= "/";
+  					}
+  					if (isset($render_array[$col-1][$r+1])) {
+  						$edges .= "\\";
+  					}
+  					$edge_line .= sprintf("%${width}s", $edges);*/
+  				} else {
+  					$node_line .= sprintf("%-${width}s", "");
+  					//$edge_line .= sprintf("%-${width}s", "");
+  				}
+  			}
+  			echo "$node_line\n";
+  			//echo "$edge_line\n";
+  		}
+  	}
+  }
+
 }
 
 $BST = new BinarySearchTree;
@@ -241,6 +322,16 @@ $BST->insert(2);
 $BST->insert(4);
 $BST->insert(13);
 $BST->insert(9);
+
+
+$BST->traverse();
+
+echo "\nDepth: ", $BST->depth();
+echo "\n\n";
+
+$BST->draw();
+
+exit;
 
 function test_searching(&$bst, $num) {
   $node = $bst->search($num);
