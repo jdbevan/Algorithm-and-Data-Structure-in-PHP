@@ -266,7 +266,7 @@ class BinarySearchTree {
    * Traverse all routes to leaves and return greatest
    * journey distance
    */
-  public function depth() {
+  public function height() {
   	if ($this->_root !== $this->_sentinel) {
   		return $this->_root->depthFromNode();
   	}
@@ -279,7 +279,7 @@ class BinarySearchTree {
   	if ($this->_root !== $this->_sentinel) {
   		$render_array = array();
   		$width = 0;
-  		$rows = $this->depth();
+  		$rows = $this->height();
   		
   		$this->_root->draw($render_array, $width);
   		//$edge_line = "";
@@ -326,7 +326,7 @@ $BST->insert(9);
 
 $BST->traverse();
 
-echo "\nDepth: ", $BST->depth();
+echo "\nHeight: ", $BST->height();
 echo "\n\n";
 
 $BST->draw();
