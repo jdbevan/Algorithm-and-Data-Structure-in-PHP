@@ -129,6 +129,35 @@ class Node {
   	return $maxDepth;
   }
 
+  public function balance() {
+	$left_height = $this->left()->depthFromNode();
+  	$right_height = $this->right()->depthFromNode();
+
+	if ($left_height > $right_height) {
+		// Rotate right
+		$pivot = $this->left();
+		
+		$this->setLeft($pivot->right());
+		$this->left()->setParent($this);
+		
+		$pivot->setRight($this);
+		$this->setParent($pivot);
+		$pivot->setParent(new Node(NULL));
+	} else {
+		// Rotate left
+		$pivot = $this->right();
+		
+		$this->setRight($pivot->left());
+		$this->left()->setParent($this);
+		
+		$pivot->setLeft($this);
+		$this->setParent($pivot);
+		$pivot->setParent(new Node(NULL));
+	}
+	
+	return $pivot;
+  }
+
   /**
    * Magic toString function
    * @access public
@@ -188,13 +217,13 @@ class BinarySearchTree {
     	while($root !== $this->_sentinel) {
     		// Don't insert the same value twice
     		if ($newNode->val() == $root->val()) {
-    			return;
+    			break;
     		} else if ($newNode->val() < $root->val()) {
     			// Insert recursively to the left for smaller values
     			if ($root->left() === $this->_sentinel) {
     				$newNode->setParent($root);
     				$root->setLeft($newNode);
-    				return;
+    				break;
     			} else {
     				$root = $root->left();
     			}
@@ -203,12 +232,14 @@ class BinarySearchTree {
     			if ($root->right() === $this->_sentinel) {
     				$newNode->setParent($root);
     				$root->setRight($newNode);
-    				return;
+    				break;
     			} else {
     				$root = $root->right();
 	   			}
 	   		}
     	}
+    	
+    	$this->balance();
     }
   }
 
@@ -256,6 +287,23 @@ class BinarySearchTree {
   	}
   }
 
+  public function isUnbalanced() {
+  	if ($this->_root === $this->_sentinel) {
+  		return false;
+  	} else {
+  		$left_height = $this->_root->left()->depthFromNode();
+  		$right_height = $this->_root->right()->depthFromNode();
+  		//echo $left_height, " ", $right_height, "\n";
+  		return abs($left_height - $right_height) > 1;
+  	}
+  }
+
+  public function balance() {
+  	if ($this->_root !== $this->_sentinel && $this->isUnbalanced()) {
+  		$this->_root = $this->_root->balance();
+  	}
+  }
+
 }
 
 $BST = new BinarySearchTree;
@@ -269,12 +317,20 @@ $BST->insert(20);
 $BST->insert(2);
 $BST->insert(4);
 $BST->insert(13);
-$BST->insert(9);
-
+$BST->insert(9);/*
+$BST->insert(5);
+$BST->insert(7);
+$BST->insert(3);
+$BST->insert(2);
+$BST->insert(4);*/
 
 $BST->traverse();
 
-echo "\nHeight: ", $BST->height();
+echo "\nHeight: ", $BST->height(), "\n\n";
+
+$BST->balance();
+
+$BST->traverse();
 
 exit;
 
